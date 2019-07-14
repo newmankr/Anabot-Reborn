@@ -89,11 +89,17 @@ app.post('/', async (req, res) => {
 		return;
 	}
 
-	let { text } = message;
-
+	let { text }   = message;
 	const { from } = message;
-	const db       = await   connectToDB();
-	const user     = await getUser(db, from);
+
+	if (text.startsWith('/debug') && from.username == 'Anaboth') {
+		await sendMessage(parseInt(from.id), message);
+		res.status(200).send('Ok');
+		return;
+	}
+
+	const db   = await   connectToDB();
+	const user = await getUser(db, from);
 
 	if (text.startsWith('/')) {
 		// it's command
