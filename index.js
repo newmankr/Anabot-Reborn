@@ -27,14 +27,14 @@ async function connectToDB() {
 
 function owofy(str) {
 	str = str.replace(/OVE/g, 'UV');
-	str = str.replace(/O/g, 'OWO');
+	str = str.replace(/O/g, 'OwO');
 	str = str.replace(/Y/g, 'WY');
 	str = str.replace(/N/g, 'NY');
 	str = str.replace(/L/g, 'W');
 	str = str.replace(/R/g, 'W');
 
 	str = str.replace(/ove/g, 'uv');
-	str = str.replace(/o/g, 'owo');
+	str = str.replace(/o/g, 'OwO');
 	str = str.replace(/y/g, 'wy');
 	str = str.replace(/n/g, 'ny');
 	str = str.replace(/l/g, 'w');
@@ -100,22 +100,18 @@ app.post('/', async (req, res) => {
 		if (text.startsWith('/owofy')) {
 			text = text.replace(/\/owofy(@.*\s)?/, '');
 			text = owofy(text);
-			await sendMessage(parseInt(from.id), text);
-			res.status(200).send('Ok');
-			return;
+		} else {
+			text = 'command not found, sowwy >///<'
 		}
-	} else {
-		// ignore
+		await sendMessage(parseInt(from.id), text);
 		res.status(200).send('Ok');
 		return;
 	}
 
-	// Quick answer just to test if everything is right
-	await sendMessage(
-	  parseInt(from.id),
-	  { 'Name' : user.first_name, 'Text' : text, 'Username' : user.username });
-
+	// ignore
+	await sendMessage(parseInt(from.id), 'no');
 	res.status(200).send('Ok');
+	return;
 });
 
 module.exports = app;
