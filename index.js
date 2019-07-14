@@ -18,7 +18,7 @@ async function connectToDB() {
 
 	const client = await MongoClient.connect(db_uri, { useNewUrlParser : true });
 
-	const db = await client.db(url.parse(db_uri).pathname.substr(1));
+	const db = await client.db(url.parse(db_uri).pathname.substring(1));
 
 	cachedDB = db;
 
@@ -64,6 +64,11 @@ async function getUser(db, from) {
 	}
 }
 
+async function addCmd(db, command, answer) {
+	const collection = db.collection('commands');
+	collection.insert({ 'command' : command, 'answer' : answer });
+}
+
 // TODO: Make a function to reply a given message
 // Send message to a given ID
 async function sendMessage(id, data) {
@@ -104,8 +109,13 @@ app.post('/', async (req, res) => {
 	if (text.startsWith('/')) {
 		// it's command
 		if (text.startsWith('/owofy')) {
-			text = text.replace(/\/owofy(@\w+\s)?/, '');
+			text = text.replace(/\/owofy(\s+)?(@\w+\s+)?/, '');
 			text = owofy(text);
+		} else if (text.startsWith('/addcmd')) {
+			text          = text.replace(/\/addcmd(\s+)?(@\w+\s+)?/, '');
+			const command = text.split(' ')[0];
+			addCmd(db, command, text.substring(command.length + 1));
+			text = 'command added UwU';
 		} else {
 			text = 'command not found, sowwy >///<'
 		}
