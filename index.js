@@ -25,6 +25,24 @@ async function connectToDB() {
 	return db;
 }
 
+function owofy(str) {
+	str = str.replace(/OVE/g, 'UV');
+	str = str.replace(/O/g, 'OWO');
+	str = str.replace(/Y/g, 'WY');
+	str = str.replace(/N/g, 'NY');
+	str = str.replace(/L/g, 'W');
+	str = str.replace(/R/g, 'W');
+
+	str = str.replace(/ove/g, 'uv');
+	str = str.replace(/o/g, 'owo');
+	str = str.replace(/y/g, 'wy');
+	str = str.replace(/n/g, 'ny');
+	str = str.replace(/l/g, 'w');
+	str = str.replace(/r/g, 'w');
+
+	return str;
+}
+
 /*
  * This is just for test, when the first feature is implemented it won't need to
  * store any user
@@ -71,11 +89,26 @@ app.post('/', async (req, res) => {
 		return;
 	}
 
-	const { text, from } = message;
+	let { text } = message;
 
-	const db = await connectToDB();
+	const { from } = message;
+	const db       = await   connectToDB();
+	const user     = await getUser(db, from);
 
-	const user = await getUser(db, from);
+	if (text.startsWith('/')) {
+		// it's command
+		if (text.startsWith('/owofy')) {
+			text = text.replace(/\/owofy(@.*\s)?/, '');
+			text = owofy(text);
+			await sendMessage(parseInt(from.id), text);
+			res.status(200).send('Ok');
+			return;
+		}
+	} else {
+		// ignore
+		res.status(200).send('Ok');
+		return;
+	}
 
 	// Quick answer just to test if everything is right
 	await sendMessage(
