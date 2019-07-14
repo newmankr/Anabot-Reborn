@@ -98,7 +98,7 @@ app.post('/', async (req, res) => {
 	if (text.startsWith('/')) {
 		// it's command
 		if (text.startsWith('/owofy')) {
-			text = text.replace(/\/owofy(@.*\s)?/, '');
+			text = text.replace(/\/owofy(@\w+\s)?/, '');
 			text = owofy(text);
 		} else {
 			text = 'command not found, sowwy >///<'
