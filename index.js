@@ -103,29 +103,43 @@ app.post('/', async (req, res) => {
 		return;
 	}
 
-	const db   = await   connectToDB();
-	const user = await getUser(db, from);
+	const db       = await       connectToDB();
+	const commands = await db.collection('commands');
 
 	if (text.startsWith('/')) {
 		// it's command
-		if (text.startsWith('/owofy')) {
-			text = text.replace(/\/owofy(\s+)?(@\w+\s+)?/, '');
-			text = owofy(text);
-		} else if (text.startsWith('/addcmd')) {
-			text          = text.replace(/\/addcmd(\s+)?(@\w+\s+)?/, '');
-			const command = text.split(' ')[0];
-			addCmd(db, command, text.substring(command.length + 1));
-			text = 'command added UwU';
-		} else {
-			text = 'command not found, sowwy >///<'
+		const command = text.match(/(\/\w+)(@\w+)?/)[1];
+
+		switch (command) {
+			case 'owofy': text = owofy(text); break;
+			case 'addcmd':
+				const answer = text.substring(command.length + 1);
+				collection.insert(
+				  { 'command' : command, 'answer' : answer, 'count' : 0 });
+				text = 'command added UwU';
+				break;
+			default: text = 'not found ( ._.) sowwy'; break;
 		}
+
+		// if (command == 'owofy') {
+		// 	text = text.replace(/\/owofy(\s+)?(@\w+\s+)?/, '');
+		// 	text = owofy(text);
+		// } else if (command == '/addcmd') {
+		// 	text          = text.replace(/\/addcmd(\s+)?(@\w+\s+)?/, '');
+		// 	const command = text.split(' ')[0];
+		// 	const answer  = text.substring(command.length + 1);
+		// 	collection.insert(
+		// 	  { 'command' : command, 'answer' : answer, 'count' : 0 });
+		// 	text = 'command added UwU';
+		// } else {
+		// 	text = 'not found ( ._.) sowwy'
+		// }
 		await sendMessage(parseInt(from.id), text);
 		res.status(200).send('Ok');
 		return;
 	}
 
 	// ignore
-	await sendMessage(parseInt(from.id), 'no');
 	res.status(200).send('Ok');
 	return;
 });
