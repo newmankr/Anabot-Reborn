@@ -89,16 +89,29 @@ app.post('/', async (req, res) => {
 
 	const { message } = req.body;
 
+	console.log(message);
+
 	if (!message) {
 		res.status(200).send('Ok');
 		return;
 	}
 
-	let { text }   = message;
-	const { from } = message;
+	let { text }         = message;
+	const { chat, from } = message;
+
+	if (!text) {
+		res.status(200).send('Ok');
+		return;
+	}
+
+	if (text == '/') {
+		await sendMessage(parseInt(chat.id), 'Main Menu');
+		res.status(200).send('Ok');
+		return;
+	}
 
 	if (text.startsWith('/debug') && from.username == 'Anaboth') {
-		await sendMessage(parseInt(from.id), message);
+		await sendMessage(parseInt(chat.id), message);
 		res.status(200).send('Ok');
 		return;
 	}
@@ -126,7 +139,7 @@ app.post('/', async (req, res) => {
 				break;
 		}
 
-		await sendMessage(parseInt(from.id), text);
+		await sendMessage(parseInt(chat.id), text);
 		res.status(200).send('Ok');
 		return;
 	}
