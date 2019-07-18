@@ -43,32 +43,6 @@ function owofy(str) {
 	return str;
 }
 
-/*
- * This is just for test, when the first feature is implemented it won't need to
- * store any user
- */
-async function getUser(db, from) {
-	const collection = await db.collection('users');
-
-	const user = await collection.find({ 'id' : from.id }).toArray();
-
-	if (user.length > 0) {
-		return user[0];
-	} else {
-
-		await collection.insert(from);
-
-		res.status(200).send('Ok');
-
-		return;
-	}
-}
-
-async function addCmd(db, command, answer) {
-	const collection = db.collection('commands');
-	collection.insert({ 'command' : command, 'answer' : answer });
-}
-
 // TODO: Make a function to reply a given message
 // Send message to a given ID
 async function sendMessage(id, data) {
