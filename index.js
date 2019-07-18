@@ -70,8 +70,9 @@ app.post('/', async (req, res) => {
 		return;
 	}
 
-	let { text }         = message;
-	const { chat, from } = message;
+	let { text }                           = message;
+	const { chat, from, reply_to_message } = message;
+	const reply_from = (reply_to_message) ? reply_to_message.from : undefined;
 
 	if (!text) {
 		res.status(200).send('Ok');
@@ -91,17 +92,24 @@ app.post('/', async (req, res) => {
 	}
 
 	const db       = await       connectToDB();
+	const admins   = await   db.collection('admins');
 	const commands = await db.collection('commands');
 
 	if (text.startsWith('/')) {
 		// it's command
 		const command = text.match(/(\/\w+)(@\w+)?/)[1].substring(1);
 		text          = text.replace(/\/\w+(@\w+)?\s+/, '');
+		const adm     = await admins.findOne({ 'id' : from.id });
+
 		let answer;
 
 		switch (command) {
 			case 'owofy': answer = owofy(text); break;
 			case 'addcmd':
+				if (!adm || adm.level < 0) {
+					answer = 'Only for admins ( ò_ó)';
+					break;
+				}
 				const new_cmd    = text.split(' ')[0];
 				const new_answer = text.substring(new_cmd.length + 1);
 				commands.insert(
@@ -109,6 +117,10 @@ app.post('/', async (req, res) => {
 				answer = 'Command ' + new_cmd + ' added ( ・ω・)';
 				break;
 			case 'updatecmd':
+				if (!adm || adm.level < 0) {
+					answer = 'Only for admins ( ò_ó)';
+					break;
+				}
 				const update_cmd    = text.split(' ')[0];
 				const update_answer = text.substring(update_cmd.length + 1);
 				await commands.updateOne({ 'command' : update_cmd },
@@ -116,8 +128,46 @@ app.post('/', async (req, res) => {
 				answer = 'Command ' + update_cmd + ' updated ( ^w^)';
 				break;
 			case 'removecmd':
+				if (!adm || adm.level < 0) {
+					answer = 'Only for admins ( ò_ó)';
+					break;
+				}
 				await commands.deleteOne({ 'command' : text.split(' ')[0] });
 				answer = 'Command ' + text.split(' ')[0] + ' removed! ( ._.) F';
+				break;
+			case 'addadmin':
+				if (!adm || adm.level < 4) {
+					answer = 'Only for admins ( ò_ó)';
+					break;
+				}
+				await admins.insert({
+					'id' : reply_from.id,
+					'username' : reply_from.username,
+					'level' : 0    // TODO: define more levels for admins
+				});
+				answer = reply_from.username + ' added as admin ( ≧∇≦)';
+				break;
+			case 'setadminlvl':
+				if (!adm || adm.level < 4) {
+					answer = 'Only for admins ( ò_ó)';
+					break;
+				}
+				const new_lvl = parseInt(text);
+				if (adm.level <= new_lvl) {
+					answer =
+					  'You cannot set a level higher or equals to yours for another Admin';
+					break;
+				}
+				await admins.updateOne({ 'id' : reply_from.id },
+				                       { $set : { 'level' : parseInt(text) } });
+				break;
+			case 'removeadmin':
+				if (!adm || adm.level < 4) {
+					answer = 'Only for admins ( ò_ó)';
+					break;
+				}
+				await admins.deleteOne({ 'id' : reply_from.id });
+				answer = reply_from.username + ' removed from admins ( õ_ó)';
 				break;
 			default:
 				cmd = await commands.findOne({ 'command' : command });
