@@ -123,15 +123,27 @@ app.post('/', async (req, res) => {
 		// it's command
 		const command = text.match(/(\/\w+)(@\w+)?/)[1].substring(1);
 		text          = text.replace(/\/\w+(@\w+)?\s+/, '');
+		let answer;
 
 		switch (command) {
-			case 'owofy': text = owofy(text); break;
+			case 'owofy': answer = owofy(text); break;
 			case 'addcmd':
-				const new_cmd = text.split(' ')[0];
-				const answer  = text.substring(new_cmd.length + 1);
+				const new_cmd    = text.split(' ')[0];
+				const new_answer = text.substring(new_cmd.length + 1);
 				commands.insert(
-				  { 'command' : new_cmd, 'answer' : answer, 'count' : 0 });
-				text = 'command added UwU';
+				  { 'command' : new_cmd, 'answer' : new_answer, 'count' : 0 });
+				answer = 'Command ' + new_cmd + ' added ( ・ω・)';
+				break;
+			case 'updatecmd':
+				const update_cmd    = text.split(' ')[0];
+				const update_answer = text.substring(update_cmd.length + 1);
+				await commands.updateOne({ 'command' : update_cmd },
+				                         { $set : { 'answer' : update_answer } });
+				answer = 'Command ' + update_cmd + ' updated ( ^w^)';
+				break;
+			case 'removecmd':
+				await commands.deleteOne({ 'command' : text.split(' ')[0] });
+				answer = 'Command ' + text.split(' ')[0] + ' removed! ( ._.) F';
 				break;
 			default:
 				cmd = await commands.findOne({ 'command' : command });
@@ -143,11 +155,11 @@ app.post('/', async (req, res) => {
 					return;
 				}
 
-				text = cmd.answer;
+				answer = cmd.answer;
 				break;
 		}
 
-		await sendMessage(parseInt(chat.id), text);
+		await sendMessage(parseInt(chat.id), answer);
 		res.status(200).send('Ok');
 		return;
 	}
