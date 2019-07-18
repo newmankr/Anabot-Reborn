@@ -134,8 +134,16 @@ app.post('/', async (req, res) => {
 				text = 'command added UwU';
 				break;
 			default:
-				cmd  = await commands.findOne({ 'command' : command });
-				text = (cmd) ? cmd.answer : 'not found ( ._.) sowwy';
+				cmd = await commands.findOne({ 'command' : command });
+
+				// If the command doesn't exist on the DB just ignore it to not conflict
+				// with other bots
+				if (!cmd) {
+					res.status(200).send('Ok');
+					return;
+				}
+
+				text = cmd.answer;
 				break;
 		}
 
