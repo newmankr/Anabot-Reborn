@@ -18,7 +18,7 @@ async function connectToDB() {
 
 	const client = await MongoClient.connect(db_uri, { useNewUrlParser : true });
 
-	const db = await client.db(url.parse(db_uri).pathname.substring(1));
+	const db = await client.db(process.env.DB_NAME);
 
 	cachedDB = db;
 
