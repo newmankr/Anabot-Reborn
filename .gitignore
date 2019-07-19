@@ -62,4 +62,4 @@ typings/
 .next
 
 # now config file
-now.json
+now*.json
