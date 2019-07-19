@@ -70,8 +70,7 @@ function parseVariables(command, message, from, to) {
 	return command;
 }
 
-// TODO: Change the route, cuz of security issues
-app.post('/', async (req, res) => {
+app.post('/' + process.env.ROUTE, async (req, res) => {
 	if (!req.body) {
 		res.status(200).send('Ok');
 		return;
