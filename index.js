@@ -54,6 +54,22 @@ async function sendMessage(id, data) {
 	  .then(res => res.json());
 }
 
+function parseVariables(command, message, from, to) {
+	let { answer } = command;
+	answer         = answer.replace(/%{from\.username}/g, from.username);
+	answer         = answer.replace(/%{from\.first_name}/g, from.first_name);
+	answer         = answer.replace(/%{count}/g, command.count);
+	answer         = answer.replace(/%{text}/g, message);
+
+	if (to) {
+		answer = answer.replace(/%{to\.username}/g, to.username);
+		answer = answer.replace(/%{to\.first_name}/g, to.first_name);
+	}
+
+	command.answer = answer;
+	return command;
+}
+
 // TODO: Change the route, cuz of security issues
 app.post('/', async (req, res) => {
 	if (!req.body) {
@@ -155,7 +171,7 @@ app.post('/', async (req, res) => {
 				const new_lvl = parseInt(text);
 				if (adm.level <= new_lvl) {
 					answer =
-					  'You cannot set a level higher or equals to yours for another Admin';
+					  'You cannot set a level higher or equals to yours for another Admin (¬_¬" )';
 					break;
 				}
 				await admins.updateOne({ 'id' : reply_from.id },
@@ -178,6 +194,8 @@ app.post('/', async (req, res) => {
 					res.status(200).send('Ok');
 					return;
 				}
+
+				cmd = parseVariables(cmd, text, from, reply_from);
 
 				answer = cmd.answer;
 				break;
