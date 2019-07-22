@@ -133,8 +133,10 @@ app.post('/' + process.env.ROUTE, async (req, res) => {
 			case 'owofy': answer = owofy(text); break;
 			case 'calc':
 				const sanitized = text.replace(/[^-()\d/*+.]/g, '');
-				answer          = eval(sanitized);
-				reply_to        = message_id;
+				try {
+					answer = eval(sanitized);
+				} catch (error) { answer = 'Something is wrong ( -_-)'; }
+				reply_to = message_id;
 				break;
 			case 'addcmd':
 				if (!adm) {
