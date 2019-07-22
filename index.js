@@ -121,8 +121,12 @@ app.post('/' + process.env.ROUTE, async (req, res) => {
 		switch (command) {
 			case 'owofy': answer = owofy(text); break;
 			case 'addcmd':
-				if (!adm || adm.level < 0) {
+				if (!adm) {
 					answer = 'Only for admins ( ò_ó)';
+					break;
+				}
+				if (adm.level < 0) {
+					answer = 'Your admin level don\'t have permission to do that ( O_o)';
 					break;
 				}
 				const new_cmd    = text.split(' ')[0];
@@ -132,8 +136,12 @@ app.post('/' + process.env.ROUTE, async (req, res) => {
 				answer = 'Command ' + new_cmd + ' added ( ・ω・)';
 				break;
 			case 'updatecmd':
-				if (!adm || adm.level < 0) {
+				if (!adm) {
 					answer = 'Only for admins ( ò_ó)';
+					break;
+				}
+				if (adm.level < 0) {
+					answer = 'Your admin level don\'t have permission to do that ( O_o)';
 					break;
 				}
 				const update_cmd    = text.split(' ')[0];
@@ -143,16 +151,24 @@ app.post('/' + process.env.ROUTE, async (req, res) => {
 				answer = 'Command ' + update_cmd + ' updated ( ^w^)';
 				break;
 			case 'removecmd':
-				if (!adm || adm.level < 0) {
+				if (!adm) {
 					answer = 'Only for admins ( ò_ó)';
+					break;
+				}
+				if (adm.level < 0) {
+					answer = 'Your admin level don\'t have permission to do that ( O_o)';
 					break;
 				}
 				await commands.deleteOne({ 'command' : text.split(' ')[0] });
 				answer = 'Command ' + text.split(' ')[0] + ' removed! ( ._.) F';
 				break;
 			case 'addadmin':
-				if (!adm || adm.level < 4) {
+				if (!adm) {
 					answer = 'Only for admins ( ò_ó)';
+					break;
+				}
+				if (adm.level < 4) {
+					answer = 'Your admin level don\'t have permission to do that ( O_o)';
 					break;
 				}
 				await admins.insert({
@@ -163,22 +179,30 @@ app.post('/' + process.env.ROUTE, async (req, res) => {
 				answer = reply_from.username + ' added as admin ( ≧∇≦)';
 				break;
 			case 'setadminlvl':
-				if (!adm || adm.level < 4) {
+				if (!adm) {
 					answer = 'Only for admins ( ò_ó)';
+					break;
+				}
+				if (adm.level < 4) {
+					answer = 'Your admin level don\'t have permission to do that ( O_o)';
 					break;
 				}
 				const new_lvl = parseInt(text);
 				if (adm.level <= new_lvl) {
 					answer =
-					  'You cannot set a level higher or equals to yours for another Admin (¬_¬" )';
+					  'You cannot set a level higher or equals to yours for another Admin ( ¬_¬")';
 					break;
 				}
 				await admins.updateOne({ 'id' : reply_from.id },
 				                       { $set : { 'level' : parseInt(text) } });
 				break;
 			case 'removeadmin':
-				if (!adm || adm.level < 4) {
+				if (!adm) {
 					answer = 'Only for admins ( ò_ó)';
+					break;
+				}
+				if (adm.level < 4) {
+					answer = 'Your admin level don\'t have permission to do that ( O_o)';
 					break;
 				}
 				await admins.deleteOne({ 'id' : reply_from.id });
