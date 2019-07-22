@@ -195,6 +195,8 @@ app.post('/' + process.env.ROUTE, async (req, res) => {
 				}
 
 				cmd = parseVariables(cmd, text, from, reply_from);
+				await commands.updateOne({ 'command' : command },
+				                         { $set : { 'count' : cmd.count + 1 } });
 
 				answer = cmd.answer;
 				break;
