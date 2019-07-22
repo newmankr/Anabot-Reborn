@@ -13,7 +13,7 @@ app.use(express.json());
 let cachedDB = null;
 
 // TODO: This can probably be refactored
-async function connectToDB() {
+connectToDB = async () => {
 	if (cachedDB) return cachedDB;
 
 	const client = await MongoClient.connect(db_uri, { useNewUrlParser : true });
@@ -23,9 +23,9 @@ async function connectToDB() {
 	cachedDB = db;
 
 	return db;
-}
+};
 
-function owofy(str) {
+owofy = (str) => {
 	str = str.replace(/OVE/g, 'UV');
 	str = str.replace(/O/g, 'OwO');
 	str = str.replace(/Y/g, 'WY');
@@ -41,20 +41,19 @@ function owofy(str) {
 	str = str.replace(/r/g, 'w');
 
 	return str;
-}
+};
 
-// TODO: Make a function to reply a given message
 // Send message to a given ID
-async function sendMessage(id, data) {
+sendMessage = async (id, data) => {
 	return await fetch(api_url + '/sendMessage', {
 		       method : 'POST',
 		       headers : { 'Content-Type' : 'application/json' },
 		body : JSON.stringify({ chat_id : id, text : data })
 	       })
 	  .then(res => res.json());
-}
+};
 
-async function sendMessage(id, data, reply_to) {
+sendMessage = async (id, data, reply_to) => {
 	return await fetch(api_url + '/sendMessage', {
 		       method : 'POST',
 		       headers : { 'Content-Type' : 'application/json' },
@@ -62,9 +61,9 @@ async function sendMessage(id, data, reply_to) {
 		  { chat_id : id, text : data, reply_to_message_id : reply_to })
 	       })
 	  .then(res => res.json());
-}
+};
 
-function parseVariables(command, message, from, to) {
+parseVariables = (command, message, from, to) => {
 	let { answer } = command;
 	answer         = answer.replace(/%{from\.username}/g, from.username);
 	answer         = answer.replace(/%{from\.first_name}/g, from.first_name);
@@ -78,7 +77,7 @@ function parseVariables(command, message, from, to) {
 
 	command.answer = answer;
 	return command;
-}
+};
 
 app.post('/' + process.env.ROUTE, async (req, res) => {
 	if (!req.body) {
@@ -202,7 +201,7 @@ app.post('/' + process.env.ROUTE, async (req, res) => {
 				await admins.insert({
 					'id' : reply_from.id,
 					'username' : reply_from.username,
-					'level' : 0    // TODO: define more levels for admins
+					'level' : 0
 				});
 				answer   = reply_from.username + ' added as admin ( ≧∇≦)';
 				reply_to = message_id;
@@ -247,8 +246,8 @@ app.post('/' + process.env.ROUTE, async (req, res) => {
 			default:
 				cmd = await commands.findOne({ 'command' : command });
 
-				// If the command doesn't exist on the DB just ignore it to not conflict
-				// with other bots
+				// If the command doesn't exist on the DB just ignore it to
+				// not conflict with other bots
 				if (!cmd) {
 					res.status(200).send('Ok');
 					return;
