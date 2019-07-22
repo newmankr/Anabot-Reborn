@@ -120,6 +120,10 @@ app.post('/' + process.env.ROUTE, async (req, res) => {
 
 		switch (command) {
 			case 'owofy': answer = owofy(text); break;
+			case 'calc':
+				const sanitized = text.replace(/[^-()\d/*+.]/g, '');
+				answer          = eval(sanitized);
+				break;
 			case 'addcmd':
 				if (!adm) {
 					answer = 'Only for admins ( ò_ó)';
