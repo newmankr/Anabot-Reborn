@@ -54,6 +54,16 @@ async function sendMessage(id, data) {
 	  .then(res => res.json());
 }
 
+async function sendMessage(id, data, reply_to) {
+	return await fetch(api_url + '/sendMessage', {
+		       method : 'POST',
+		       headers : { 'Content-Type' : 'application/json' },
+		body : JSON.stringify(
+		  { chat_id : id, text : data, reply_to_message_id : reply_to })
+	       })
+	  .then(res => res.json());
+}
+
 function parseVariables(command, message, from, to) {
 	let { answer } = command;
 	answer         = answer.replace(/%{from\.username}/g, from.username);
@@ -86,8 +96,10 @@ app.post('/' + process.env.ROUTE, async (req, res) => {
 	}
 
 	let { text }                           = message;
-	const { chat, from, reply_to_message } = message;
+	const { chat, from }                   = message;
+	const { reply_to_message, message_id } = message;
 	const reply_from = (reply_to_message) ? reply_to_message.from : undefined;
+	let reply_to     = undefined;
 
 	if (!text) {
 		res.status(200).send('Ok');
@@ -123,56 +135,68 @@ app.post('/' + process.env.ROUTE, async (req, res) => {
 			case 'calc':
 				const sanitized = text.replace(/[^-()\d/*+.]/g, '');
 				answer          = eval(sanitized);
+				reply_to        = message_id;
 				break;
 			case 'addcmd':
 				if (!adm) {
-					answer = 'Only for admins ( ò_ó)';
+					answer   = 'Only for admins ( ò_ó)';
+					reply_to = message_id;
 					break;
 				}
 				if (adm.level < 0) {
 					answer = 'Your admin level don\'t have permission to do that ( O_o)';
+					reply_to = message_id;
 					break;
 				}
 				const new_cmd    = text.split(' ')[0];
 				const new_answer = text.substring(new_cmd.length + 1);
 				commands.insert(
 				  { 'command' : new_cmd, 'answer' : new_answer, 'count' : 0 });
-				answer = 'Command ' + new_cmd + ' added ( ・ω・)';
+				answer   = 'Command ' + new_cmd + ' added ( ・ω・)';
+				reply_to = message_id;
 				break;
 			case 'updatecmd':
 				if (!adm) {
-					answer = 'Only for admins ( ò_ó)';
+					answer   = 'Only for admins ( ò_ó)';
+					reply_to = message_id;
 					break;
 				}
 				if (adm.level < 0) {
 					answer = 'Your admin level don\'t have permission to do that ( O_o)';
+					reply_to = message_id;
 					break;
 				}
 				const update_cmd    = text.split(' ')[0];
 				const update_answer = text.substring(update_cmd.length + 1);
 				await commands.updateOne({ 'command' : update_cmd },
 				                         { $set : { 'answer' : update_answer } });
-				answer = 'Command ' + update_cmd + ' updated ( ^w^)';
+				answer   = 'Command ' + update_cmd + ' updated ( ^w^)';
+				reply_to = message_id;
 				break;
 			case 'removecmd':
 				if (!adm) {
-					answer = 'Only for admins ( ò_ó)';
+					answer   = 'Only for admins ( ò_ó)';
+					reply_to = message_id;
 					break;
 				}
 				if (adm.level < 0) {
 					answer = 'Your admin level don\'t have permission to do that ( O_o)';
+					reply_to = message_id;
 					break;
 				}
 				await commands.deleteOne({ 'command' : text.split(' ')[0] });
-				answer = 'Command ' + text.split(' ')[0] + ' removed! ( ._.) F';
+				answer   = 'Command ' + text.split(' ')[0] + ' removed! ( ._.) F';
+				reply_to = message_id;
 				break;
 			case 'addadmin':
 				if (!adm) {
-					answer = 'Only for admins ( ò_ó)';
+					answer   = 'Only for admins ( ò_ó)';
+					reply_to = message_id;
 					break;
 				}
 				if (adm.level < 4) {
 					answer = 'Your admin level don\'t have permission to do that ( O_o)';
+					reply_to = message_id;
 					break;
 				}
 				await admins.insert({
@@ -180,15 +204,18 @@ app.post('/' + process.env.ROUTE, async (req, res) => {
 					'username' : reply_from.username,
 					'level' : 0    // TODO: define more levels for admins
 				});
-				answer = reply_from.username + ' added as admin ( ≧∇≦)';
+				answer   = reply_from.username + ' added as admin ( ≧∇≦)';
+				reply_to = message_id;
 				break;
 			case 'setadminlvl':
 				if (!adm) {
-					answer = 'Only for admins ( ò_ó)';
+					answer   = 'Only for admins ( ò_ó)';
+					reply_to = message_id;
 					break;
 				}
 				if (adm.level < 4) {
 					answer = 'Your admin level don\'t have permission to do that ( O_o)';
+					reply_to = message_id;
 					break;
 				}
 				const new_lvl = parseInt(text);
@@ -199,18 +226,23 @@ app.post('/' + process.env.ROUTE, async (req, res) => {
 				}
 				await admins.updateOne({ 'id' : reply_from.id },
 				                       { $set : { 'level' : parseInt(text) } });
+				answer   = 'Admin level set ( ^.^)';
+				reply_to = message_id;
 				break;
 			case 'removeadmin':
 				if (!adm) {
-					answer = 'Only for admins ( ò_ó)';
+					answer   = 'Only for admins ( ò_ó)';
+					reply_to = message_id;
 					break;
 				}
 				if (adm.level < 4) {
 					answer = 'Your admin level don\'t have permission to do that ( O_o)';
+					reply_to = message_id;
 					break;
 				}
 				await admins.deleteOne({ 'id' : reply_from.id });
-				answer = reply_from.username + ' removed from admins ( õ_ó)';
+				answer   = reply_from.username + ' removed from admins ( õ_ó)';
+				reply_to = message_id;
 				break;
 			default:
 				cmd = await commands.findOne({ 'command' : command });
@@ -230,7 +262,11 @@ app.post('/' + process.env.ROUTE, async (req, res) => {
 				break;
 		}
 
-		await sendMessage(parseInt(chat.id), answer);
+		if (reply_to) {
+			await sendMessage(parseInt(chat.id), answer, parseInt(reply_to));
+		} else {
+			await sendMessage(parseInt(chat.id), answer);
+		}
 		res.status(200).send('Ok');
 		return;
 	}
