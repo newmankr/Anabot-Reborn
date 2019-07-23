@@ -79,6 +79,12 @@ parseVariables = (command, message, from, to) => {
 	return command;
 };
 
+random = (min, max) => {
+	min = Math.ceil(min);
+	max = Math.floor(max);
+	return Math.floor(Math.random() * (max - min)) + min;
+};
+
 app.post('/' + process.env.ROUTE, async (req, res) => {
 	if (!req.body) {
 		res.status(200).send('Ok');
@@ -124,7 +130,7 @@ app.post('/' + process.env.ROUTE, async (req, res) => {
 	if (text.startsWith('/')) {
 		// it's command
 		const command = text.match(/(\/\w+)(@\w+)?/)[1].substring(1);
-		text          = text.replace(/\/\w+(@\w+)?\s+/, '');
+		text          = text.replace(/\/\w+(@\w+)?(\s+)?/, '');
 		const adm     = await admins.findOne({ 'id' : from.id });
 
 		let answer;
@@ -136,6 +142,19 @@ app.post('/' + process.env.ROUTE, async (req, res) => {
 				try {
 					answer = eval(sanitized);
 				} catch (error) { answer = 'Something is wrong ( -_-)'; }
+				reply_to = message_id;
+				break;
+			case 'random':
+				if (text == '') {
+					answer   = random(0, 10);
+					reply_to = message_id;
+					break;
+				}
+				const splited = text.split(' ');
+				if (!splited[1])
+					answer = random(0, splited[0]);
+				else
+					answer = random(splited[0], splited[1]);
 				reply_to = message_id;
 				break;
 			case 'addcmd':
