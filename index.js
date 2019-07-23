@@ -130,7 +130,7 @@ app.post('/' + process.env.ROUTE, async (req, res) => {
 	if (text.startsWith('/')) {
 		// it's command
 		const command = text.match(/(\/\w+)(@\w+)?/)[1].substring(1);
-		text          = text.replace(/\/\w+(@\w+)?\s+/, '');
+		text          = text.replace(/\/\w+(@\w+)?(\s+)?/, '');
 		const adm     = await admins.findOne({ 'id' : from.id });
 
 		let answer;
