@@ -1,3 +1,5 @@
+[![Renovate enabled](https://img.shields.io/badge/renovate-enabled-brightgreen.svg)](https://renovatebot.com/)
+
 Anabot, the bot, Reborn
 ======
 
@@ -10,9 +12,20 @@ Dependencies
 
 - Node.js >= 10
 
-Build & Run
+Deploy
 ------
 
-To run this bot you basically only need to:
-- Set your environment variables `BOT_TOKEN` and `DB_URI`.
-- Deploy to your server
+- Set this environment variables:
+  - `BOT_TOKEN  # Telegram token of the bot`
+  - `DB_URI     # The URI to connect to the database`
+  - `DB_NAME    # The database name`
+  - `ROUTE      # The route used as a secret to ensure that is Telegram sending the requests`
+- Deploy
+
+References
+------
+
+- [Mozilla Developer Reference](https://developer.mozilla.org/en-US/)
+- [Telegram Bot API Reference](https://core.telegram.org/bots/api)
+- [Node.JS](https://nodejs.org/en/)
+- [HyperNerd](https://github.com/tsoding/HyperNerd)
