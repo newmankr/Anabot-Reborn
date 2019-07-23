@@ -1,5 +1,6 @@
+/* eslint-disable require-atomic-updates */
+/* eslint-disable no-mixed-spaces-and-tabs */
 const express     = require('express');
-const url         = require('url');
 const fetch       = require('node-fetch');
 const MongoClient = require('mongodb').MongoClient;
 const app         = express();
@@ -13,7 +14,7 @@ app.use(express.json());
 let cachedDB = null;
 
 // TODO: This can probably be refactored
-connectToDB = async () => {
+const connectToDB = async () => {
 	if (cachedDB) return cachedDB;
 
 	const client = await MongoClient.connect(db_uri, { useNewUrlParser : true });
@@ -25,7 +26,7 @@ connectToDB = async () => {
 	return db;
 };
 
-owofy = (str) => {
+const owofy = (str) => {
 	str = str.replace(/OVE/g, 'UV');
 	str = str.replace(/O/g, 'OwO');
 	str = str.replace(/Y/g, 'WY');
@@ -44,7 +45,7 @@ owofy = (str) => {
 };
 
 // Send message to a given ID
-sendMessage = async (id, data) => {
+const sendMessage = async (id, data) => {
 	return await fetch(api_url + '/sendMessage', {
 		       method : 'POST',
 		       headers : { 'Content-Type' : 'application/json' },
@@ -53,7 +54,7 @@ sendMessage = async (id, data) => {
 	  .then(res => res.json());
 };
 
-sendMessage = async (id, data, reply_to) => {
+const sendMessageReply = async (id, data, reply_to) => {
 	return await fetch(api_url + '/sendMessage', {
 		       method : 'POST',
 		       headers : { 'Content-Type' : 'application/json' },
@@ -63,7 +64,7 @@ sendMessage = async (id, data, reply_to) => {
 	  .then(res => res.json());
 };
 
-parseVariables = (command, message, from, to) => {
+const parseVariables = (command, message, from, to) => {
 	let { answer } = command;
 	answer         = answer.replace(/%{from\.username}/g, from.username);
 	answer         = answer.replace(/%{from\.first_name}/g, from.first_name);
@@ -79,7 +80,7 @@ parseVariables = (command, message, from, to) => {
 	return command;
 };
 
-random = (min, max) => {
+const random = (min, max) => {
 	min = Math.ceil(min);
 	max = Math.floor(max);
 	return Math.floor(Math.random() * (max - min)) + min;
@@ -137,14 +138,15 @@ app.post('/' + process.env.ROUTE, async (req, res) => {
 
 		switch (command) {
 			case 'owofy': answer = owofy(text); break;
-			case 'calc':
+			case 'calc': {
 				const sanitized = text.replace(/[^-()\d/*+.]/g, '');
 				try {
 					answer = eval(sanitized);
 				} catch (error) { answer = 'Something is wrong ( -_-)'; }
 				reply_to = message_id;
 				break;
-			case 'random':
+			}
+			case 'random': {
 				if (text == '') {
 					answer   = random(0, 10);
 					reply_to = message_id;
@@ -157,7 +159,8 @@ app.post('/' + process.env.ROUTE, async (req, res) => {
 					answer = random(splited[0], splited[1]);
 				reply_to = message_id;
 				break;
-			case 'addcmd':
+			}
+			case 'addcmd': {
 				if (!adm) {
 					answer   = 'Only for admins ( ò_ó)';
 					reply_to = message_id;
@@ -175,7 +178,8 @@ app.post('/' + process.env.ROUTE, async (req, res) => {
 				answer   = 'Command ' + new_cmd + ' added ( ・ω・)';
 				reply_to = message_id;
 				break;
-			case 'updatecmd':
+			}
+			case 'updatecmd': {
 				if (!adm) {
 					answer   = 'Only for admins ( ò_ó)';
 					reply_to = message_id;
@@ -193,7 +197,8 @@ app.post('/' + process.env.ROUTE, async (req, res) => {
 				answer   = 'Command ' + update_cmd + ' updated ( ^w^)';
 				reply_to = message_id;
 				break;
-			case 'removecmd':
+			}
+			case 'removecmd': {
 				if (!adm) {
 					answer   = 'Only for admins ( ò_ó)';
 					reply_to = message_id;
@@ -208,7 +213,8 @@ app.post('/' + process.env.ROUTE, async (req, res) => {
 				answer   = 'Command ' + text.split(' ')[0] + ' removed! ( ._.) F';
 				reply_to = message_id;
 				break;
-			case 'addadmin':
+			}
+			case 'addadmin': {
 				if (!adm) {
 					answer   = 'Only for admins ( ò_ó)';
 					reply_to = message_id;
@@ -227,7 +233,8 @@ app.post('/' + process.env.ROUTE, async (req, res) => {
 				answer   = reply_from.username + ' added as admin ( ≧∇≦)';
 				reply_to = message_id;
 				break;
-			case 'setadminlvl':
+			}
+			case 'setadminlvl': {
 				if (!adm) {
 					answer   = 'Only for admins ( ò_ó)';
 					reply_to = message_id;
@@ -249,7 +256,8 @@ app.post('/' + process.env.ROUTE, async (req, res) => {
 				answer   = 'Admin level set ( ^.^)';
 				reply_to = message_id;
 				break;
-			case 'removeadmin':
+			}
+			case 'removeadmin': {
 				if (!adm) {
 					answer   = 'Only for admins ( ò_ó)';
 					reply_to = message_id;
@@ -264,8 +272,9 @@ app.post('/' + process.env.ROUTE, async (req, res) => {
 				answer   = reply_from.username + ' removed from admins ( õ_ó)';
 				reply_to = message_id;
 				break;
-			default:
-				cmd = await commands.findOne({ 'command' : command });
+			}
+			default: {
+				let cmd = await commands.findOne({ 'command' : command });
 
 				// If the command doesn't exist on the DB just ignore it to
 				// not conflict with other bots
@@ -280,10 +289,11 @@ app.post('/' + process.env.ROUTE, async (req, res) => {
 
 				answer = cmd.answer;
 				break;
+			}
 		}
 
 		if (reply_to) {
-			await sendMessage(parseInt(chat.id), answer, parseInt(reply_to));
+			await sendMessageReply(parseInt(chat.id), answer, parseInt(reply_to));
 		} else {
 			await sendMessage(parseInt(chat.id), answer);
 		}
