@@ -144,6 +144,19 @@ app.post('/' + process.env.ROUTE, async (req, res) => {
 				} catch (error) { answer = 'Something is wrong ( -_-)'; }
 				reply_to = message_id;
 				break;
+			case 'random':
+				if (text == '') {
+					answer   = random(0, 10);
+					reply_to = message_id;
+					break;
+				}
+				const splited = text.split(' ');
+				if (!splited[1])
+					answer = random(0, splited[0]);
+				else
+					answer = random(splited[0], splited[1]);
+				reply_to = message_id;
+				break;
 			case 'addcmd':
 				if (!adm) {
 					answer   = 'Only for admins ( ò_ó)';
