@@ -67,7 +67,7 @@ parseVariables = (command, message, from, to) => {
 	let { answer } = command;
 	answer         = answer.replace(/%{from\.username}/g, from.username);
 	answer         = answer.replace(/%{from\.first_name}/g, from.first_name);
-	answer         = answer.replace(/%{count}/g, command.count);
+	answer         = answer.replace(/%{count}/g, parseInt(command.count) + 1);
 	answer         = answer.replace(/%{text}/g, message);
 
 	if (to) {
