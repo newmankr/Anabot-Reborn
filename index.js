@@ -64,19 +64,35 @@ const sendMessageReply = async (id, data, reply_to) => {
 	  .then(res => res.json());
 };
 
-const parseVariables = (command, message, from, to) => {
+const parseVariables = (command, message, from, date, to) => {
+	const options = {
+		weekday : 'long',
+		year : 'numeric',
+		month : 'long',
+		day : 'numeric',
+		hour : '2-digit',
+		minute : '2-digit',
+		timeZone : 'America/Sao_Paulo',
+		hour12 : false
+	};
+
+	date = (new Date(date * 1000)).toLocaleString('en-GB', options);
+
 	let { answer } = command;
 	answer         = answer.replace(/%{from\.username}/g, from.username);
 	answer         = answer.replace(/%{from\.first_name}/g, from.first_name);
 	answer         = answer.replace(/%{from\.last_name}/g, from.last_name);
 	answer         = answer.replace(/%{count}/g, parseInt(command.count) + 1);
 	answer         = answer.replace(/%{text}/g, message);
+	answer         = answer.replace(/%{date}/g, date);
 
 	if (to) {
-		answer = answer.replace(/%{to\.username}/g, to.username);
-		answer = answer.replace(/%{to\.first_name}/g, to.first_name);
-		answer = answer.replace(/%{to\.last_name}/g, to.last_name);
-		answer = answer.replace(/%{to\.text}/g, to.text);
+		to.date = (new Date(to.date * 1000)).toLocaleString('en-GB', options);
+		answer  = answer.replace(/%{to\.username}/g, to.username);
+		answer  = answer.replace(/%{to\.first_name}/g, to.first_name);
+		answer  = answer.replace(/%{to\.last_name}/g, to.last_name);
+		answer  = answer.replace(/%{to\.text}/g, to.text);
+		answer  = answer.replace(/%{to\.date}/g, to.date);
 	}
 
 	command.answer = answer;
@@ -105,10 +121,11 @@ app.post('/' + process.env.ROUTE, async (req, res) => {
 	}
 
 	let { text }                           = message;
-	const { chat, from }                   = message;
+	const { chat, from, date }             = message;
 	const { reply_to_message, message_id } = message;
 	const reply = (reply_to_message) ? reply_to_message.from : undefined;
 	if (reply) reply.text = reply_to_message.text;
+	if (reply) reply.date = reply_to_message.date;
 	let reply_to = undefined;
 
 	if (!text) {
@@ -284,7 +301,7 @@ app.post('/' + process.env.ROUTE, async (req, res) => {
 					return;
 				}
 
-				cmd = parseVariables(cmd, text, from, reply);
+				cmd = parseVariables(cmd, text, from, date, reply);
 				await commands.updateOne({ 'command' : command },
 				                         { $set : { 'count' : cmd.count + 1 } });
 
