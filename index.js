@@ -64,7 +64,7 @@ const sendMessageReply = async (id, data, reply_to) => {
 	  .then(res => res.json());
 };
 
-const parseVariables = (command, message, from, date, to) => {
+const parseVariables = (command, message, from, date, reply) => {
 	const options = {
 		weekday : 'long',
 		year : 'numeric',
@@ -86,13 +86,13 @@ const parseVariables = (command, message, from, date, to) => {
 	answer         = answer.replace(/%{text}/g, message);
 	answer         = answer.replace(/%{date}/g, date);
 
-	if (to) {
-		to.date = (new Date(to.date * 1000)).toLocaleString('en-GB', options);
-		answer  = answer.replace(/%{to\.username}/g, to.username);
-		answer  = answer.replace(/%{to\.first_name}/g, to.first_name);
-		answer  = answer.replace(/%{to\.last_name}/g, to.last_name);
-		answer  = answer.replace(/%{to\.text}/g, to.text);
-		answer  = answer.replace(/%{to\.date}/g, to.date);
+	if (reply) {
+		reply.date = (new Date(reply.date * 1000)).toLocaleString('en-GB', options);
+		answer     = answer.replace(/%{reply\.username}/g, reply.username);
+		answer     = answer.replace(/%{reply\.first_name}/g, reply.first_name);
+		answer     = answer.replace(/%{reply\.last_name}/g, reply.last_name);
+		answer     = answer.replace(/%{reply\.text}/g, reply.text);
+		answer     = answer.replace(/%{reply\.date}/g, reply.date);
 	}
 
 	command.answer = answer;
