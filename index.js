@@ -76,6 +76,7 @@ const parseVariables = (command, message, from, to) => {
 		answer = answer.replace(/%{to\.username}/g, to.username);
 		answer = answer.replace(/%{to\.first_name}/g, to.first_name);
 		answer = answer.replace(/%{to\.last_name}/g, to.last_name);
+		answer = answer.replace(/%{to\.text}/g, to.text);
 	}
 
 	command.answer = answer;
@@ -106,8 +107,9 @@ app.post('/' + process.env.ROUTE, async (req, res) => {
 	let { text }                           = message;
 	const { chat, from }                   = message;
 	const { reply_to_message, message_id } = message;
-	const reply_from = (reply_to_message) ? reply_to_message.from : undefined;
-	let reply_to     = undefined;
+	const reply = (reply_to_message) ? reply_to_message.from : undefined;
+	if (reply) reply.text = reply_to_message.text;
+	let reply_to = undefined;
 
 	if (!text) {
 		res.status(200).send('Ok');
@@ -227,12 +229,9 @@ app.post('/' + process.env.ROUTE, async (req, res) => {
 					reply_to = message_id;
 					break;
 				}
-				await admins.insert({
-					'id' : reply_from.id,
-					'username' : reply_from.username,
-					'level' : 0
-				});
-				answer   = reply_from.username + ' added as admin ( ≧∇≦)';
+				await admins.insert(
+				  { 'id' : reply.id, 'username' : reply.username, 'level' : 0 });
+				answer   = reply.username + ' added as admin ( ≧∇≦)';
 				reply_to = message_id;
 				break;
 			}
@@ -253,7 +252,7 @@ app.post('/' + process.env.ROUTE, async (req, res) => {
 					  'You cannot set a level higher or equals to yours for another Admin ( ¬_¬")';
 					break;
 				}
-				await admins.updateOne({ 'id' : reply_from.id },
+				await admins.updateOne({ 'id' : reply.id },
 				                       { $set : { 'level' : parseInt(text) } });
 				answer   = 'Admin level set ( ^.^)';
 				reply_to = message_id;
@@ -270,8 +269,8 @@ app.post('/' + process.env.ROUTE, async (req, res) => {
 					reply_to = message_id;
 					break;
 				}
-				await admins.deleteOne({ 'id' : reply_from.id });
-				answer   = reply_from.username + ' removed from admins ( õ_ó)';
+				await admins.deleteOne({ 'id' : reply.id });
+				answer   = reply.username + ' removed from admins ( õ_ó)';
 				reply_to = message_id;
 				break;
 			}
@@ -285,7 +284,7 @@ app.post('/' + process.env.ROUTE, async (req, res) => {
 					return;
 				}
 
-				cmd = parseVariables(cmd, text, from, reply_from);
+				cmd = parseVariables(cmd, text, from, reply);
 				await commands.updateOne({ 'command' : command },
 				                         { $set : { 'count' : cmd.count + 1 } });
 
