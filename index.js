@@ -151,17 +151,21 @@ app.post('/' + process.env.ROUTE, async (req, res) => {
 	}
 
 	if (text.startsWith('s/') && reply_to_message) {
-		try {
-			const splitted = text.split('/');
-			let reply_to;
-			if (splitted[3]) splitted.push('');
+		const commands = text.split(';');
+		reply.text     = reply.text.replace(/You mean:\n/g, '');
+		let answer     = reply.text;
+		commands.forEach(command => {
+			const splitted = command.split('/');
+			if (!splitted[3]) splitted.push('');
 			splitted[3] = splitted[3].replace(/[^gimsuy]/g, '');
-			reply.text  = reply.text.replace(/You mean:\n/g, '');
-			const rx    = new RegExp(splitted[1], splitted[3]);
-			text        = '*You mean:*\n' + reply.text.replace(rx, splitted[2]);
-			reply_to    = reply_to_message.message_id;
-			await sendMessageReply(parseInt(chat.id), text, parseInt(reply_to));
-		} catch (e) { console.log(e); }
+			try {
+				const rx = new RegExp(splitted[1], splitted[3]);
+				answer   = answer.replace(rx, splitted[2]);
+			} catch (e) { console.log(e); }
+		});
+		answer   = '*You mean:*\n' + answer;
+		reply_to = reply_to_message.message_id;
+		await sendMessageReply(parseInt(chat.id), answer, parseInt(reply_to));
 		res.status(200).send('Ok');
 		return;
 	}
