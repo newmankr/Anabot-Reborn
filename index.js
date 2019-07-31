@@ -49,7 +49,8 @@ const sendMessage = async (id, data) => {
 	return await fetch(api_url + '/sendMessage', {
 		       method : 'POST',
 		       headers : { 'Content-Type' : 'application/json' },
-		       body : JSON.stringify({ chat_id : id, text : data })
+		body :
+		  JSON.stringify({ chat_id : id, text : data, parse_mode : 'Markdown' })
 	       })
 	  .then(res => res.json());
 };
@@ -58,8 +59,12 @@ const sendMessageReply = async (id, data, reply_to) => {
 	return await fetch(api_url + '/sendMessage', {
 		       method : 'POST',
 		       headers : { 'Content-Type' : 'application/json' },
-		       body : JSON.stringify(
-		         { chat_id : id, text : data, reply_to_message_id : reply_to })
+		body : JSON.stringify({
+			chat_id : id,
+			text : data,
+		reply_to_message_id : reply_to,
+		parse_mode : 'Markdown'
+		})
 	       })
 	  .then(res => res.json());
 };
@@ -141,6 +146,17 @@ app.post('/' + process.env.ROUTE, async (req, res) => {
 
 	if (text.startsWith('/debug') && from.username == 'Anaboth') {
 		await sendMessage(parseInt(chat.id), message);
+		res.status(200).send('Ok');
+		return;
+	}
+
+	if (text.startsWith('s/') && reply_to_message) {
+		const splitted = text.split('/');
+		let reply_to;
+		const rx = new RegExp(splitted[1], splitted[3]);
+		text     = '*You mean:*\n' + reply.text.replace(rx, splitted[2]);
+		reply_to = reply_to_message.message_id;
+		await sendMessageReply(parseInt(chat.id), text, parseInt(reply_to));
 		res.status(200).send('Ok');
 		return;
 	}
