@@ -159,6 +159,21 @@ app.post('/' + process.env.ROUTE, async (req, res) => {
 
 		switch (command) {
 			case 'owofy': answer = owofy(text); break;
+			case 'roll':
+				reply_to = message_id;
+				const matchs = text.match(/(\d+)d(\d+)([+|-]\d+)?/);
+				let rolls = [];
+				if (matchs[1] && matchs[2]) {
+					for (i = 0; i < matchs[1]; ++i)
+						rolls.push(random(1, parseInt(matchs[2]) + 1));
+					let total = rolls.reduce((a, b) => a + b, 0);
+					if (matchs[3])
+						total = eval(total + matchs[3]);
+					answer = '[' + rolls + '] = ' + total;
+				} else {
+					answer = 'Wrong usage of the command ( .-.)';
+				}
+				break;
 			case 'calc': {
 				const sanitized = text.replace(/[^-()\d/*+.]/g, '');
 				try {
