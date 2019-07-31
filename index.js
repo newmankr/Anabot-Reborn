@@ -153,9 +153,10 @@ app.post('/' + process.env.ROUTE, async (req, res) => {
 	if (text.startsWith('s/') && reply_to_message) {
 		const splitted = text.split('/');
 		let reply_to;
-		const rx = new RegExp(splitted[1], splitted[3]);
-		text     = '*You mean:*\n' + reply.text.replace(rx, splitted[2]);
-		reply_to = reply_to_message.message_id;
+		splitted[3] = splitted[3].replace(/[^gimsuy]/g, '');
+		const rx    = new RegExp(splitted[1], splitted[3]);
+		text        = '*You mean:*\n' + reply.text.replace(rx, splitted[2]);
+		reply_to    = reply_to_message.message_id;
 		await sendMessageReply(parseInt(chat.id), text, parseInt(reply_to));
 		res.status(200).send('Ok');
 		return;
