@@ -49,7 +49,7 @@ const sendMessage = async (id, data) => {
 	return await fetch(api_url + '/sendMessage', {
 		       method : 'POST',
 		       headers : { 'Content-Type' : 'application/json' },
-		body : JSON.stringify({ chat_id : id, text : data })
+		       body : JSON.stringify({ chat_id : id, text : data })
 	       })
 	  .then(res => res.json());
 };
@@ -58,8 +58,8 @@ const sendMessageReply = async (id, data, reply_to) => {
 	return await fetch(api_url + '/sendMessage', {
 		       method : 'POST',
 		       headers : { 'Content-Type' : 'application/json' },
-		body : JSON.stringify(
-		  { chat_id : id, text : data, reply_to_message_id : reply_to })
+		       body : JSON.stringify(
+		         { chat_id : id, text : data, reply_to_message_id : reply_to })
 	       })
 	  .then(res => res.json());
 };
@@ -159,6 +159,21 @@ app.post('/' + process.env.ROUTE, async (req, res) => {
 
 		switch (command) {
 			case 'owofy': answer = owofy(text); break;
+			case 'roll': {
+				reply_to     = message_id;
+				const matchs = text.match(/(\d+)d(\d+)([+|-]\d+)?/);
+				let rolls    = [];
+				if (matchs[1] && matchs[2]) {
+					for (let i = 0; i < matchs[1]; ++i)
+						rolls.push(random(1, parseInt(matchs[2]) + 1));
+					let total = rolls.reduce((a, b) => a + b, 0);
+					if (matchs[3]) total = eval(total + matchs[3]);
+					answer = '[' + rolls + '] = ' + total;
+				} else {
+					answer = 'Wrong usage of the command ( .-.)';
+				}
+				break;
+			}
 			case 'calc': {
 				const sanitized = text.replace(/[^-()\d/*+.]/g, '');
 				try {
