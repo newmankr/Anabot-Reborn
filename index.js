@@ -153,7 +153,9 @@ app.post('/' + process.env.ROUTE, async (req, res) => {
 	if (text.startsWith('s/') && reply_to_message) {
 		const splitted = text.split('/');
 		let reply_to;
+		if (splitted[3]) splitted.push('');
 		splitted[3] = splitted[3].replace(/[^gimsuy]/g, '');
+		reply.text  = reply.text.replace(/You mean:\n/g, '');
 		const rx    = new RegExp(splitted[1], splitted[3]);
 		text        = '*You mean:*\n' + reply.text.replace(rx, splitted[2]);
 		reply_to    = reply_to_message.message_id;
