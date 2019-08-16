@@ -131,7 +131,7 @@ app.post('/' + process.env.ROUTE, async (req, res) => {
 	const reply = (reply_to_message) ? reply_to_message.from : undefined;
 	if (reply) reply.text = reply_to_message.text;
 	if (reply) reply.date = reply_to_message.date;
-	let reply_to = undefined;
+	let reply_to = (reply_to_message) ? reply_to_message.message_id : message_id;
 
 	if (!text) {
 		res.status(200).send('Ok');
