@@ -172,6 +172,7 @@ app.post('/' + process.env.ROUTE, async (req, res) => {
 
 	const db       = await       connectToDB();
 	const admins   = await   db.collection('admins');
+	const quotes   = await   db.collection('quotes');
 	const commands = await db.collection('commands');
 
 	if (text.startsWith('/')) {
@@ -219,6 +220,27 @@ app.post('/' + process.env.ROUTE, async (req, res) => {
 				else
 					answer = random(splited[0], splited[1]);
 				reply_to = message_id;
+				break;
+			}
+			case 'addquote': {
+				const i = parseInt(await quotes.countDocuments()) + 1;
+
+				await quotes.insert(
+				  { 'id' : i, 'quote' : (reply) ? reply.text : text, 'count' : 0 });
+				answer = 'New quote add (@' + i + ') ( >.<)';
+				break;
+			}
+			case 'editquote': {
+				const id            = text.split(' ')[0];
+				const updated_quote = text.substring(id.length + 1);
+				await quotes.updateOne({ 'id' : parseInt(id) },
+				                       { $set : { 'quote' : updated_quote } });
+				answer = 'Quote (@' + id + ') updated ( ^.^)';
+				break;
+			}
+			case 'quote': {
+				const quote = await quotes.findOne({ 'id' : parseInt(text) });
+				answer = (quote) ? quote.quote : 'Couldn\'t found that quote ( _ _)';
 				break;
 			}
 			case 'addcmd': {
