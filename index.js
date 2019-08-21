@@ -45,17 +45,17 @@ const owofy = (str) => {
 };
 
 // Send message to a given ID
-const sendMessage = async (id, data) => {
+const sendMessage = async (id, data, parse) => {
 	return await fetch(api_url + '/sendMessage', {
 		       method : 'POST',
 		       headers : { 'Content-Type' : 'application/json' },
-		body :
-		  JSON.stringify({ chat_id : id, text : data, parse_mode : 'Markdown' })
+		body : JSON.stringify(
+		  { chat_id : id, text : data, parse_mode : (parse) ? 'Markdown' : '' })
 	       })
 	  .then(res => res.json());
 };
 
-const sendMessageReply = async (id, data, reply_to) => {
+const sendMessageReply = async (id, data, reply_to, parse) => {
 	return await fetch(api_url + '/sendMessage', {
 		       method : 'POST',
 		       headers : { 'Content-Type' : 'application/json' },
@@ -63,7 +63,7 @@ const sendMessageReply = async (id, data, reply_to) => {
 			chat_id : id,
 			text : data,
 		reply_to_message_id : reply_to,
-		parse_mode : 'Markdown'
+		parse_mode : (parse) ? 'Markdown' : ''
 		})
 	       })
 	  .then(res => res.json());
@@ -125,6 +125,7 @@ app.post('/' + process.env.ROUTE, async (req, res) => {
 		return;
 	}
 
+	let parse                              = true;
 	let { text }                           = message;
 	const { chat, from, date }             = message;
 	const { reply_to_message, message_id } = message;
@@ -236,6 +237,7 @@ app.post('/' + process.env.ROUTE, async (req, res) => {
 			case 'quote': {
 				const quote = await quotes.findOne({ 'id' : parseInt(text) });
 				answer = (quote) ? quote.quote : 'Couldn\'t found that quote ( _ _)';
+				parse  = (quote) ? true : false;
 				break;
 			}
 			case 'addcmd': {
@@ -303,6 +305,7 @@ app.post('/' + process.env.ROUTE, async (req, res) => {
 					reply_to = message_id;
 					break;
 				}
+				parse  = false;
 				answer = message;
 				break;
 			}
@@ -382,9 +385,10 @@ app.post('/' + process.env.ROUTE, async (req, res) => {
 		}
 
 		if (reply_to) {
-			await sendMessageReply(parseInt(chat.id), answer, parseInt(reply_to));
+			await sendMessageReply(parseInt(chat.id), answer, parseInt(reply_to),
+			                       parse);
 		} else {
-			await sendMessage(parseInt(chat.id), answer);
+			await sendMessage(parseInt(chat.id), answer, parse);
 		}
 		res.status(200).send('Ok');
 		return;
