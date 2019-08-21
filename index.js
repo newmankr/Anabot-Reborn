@@ -144,12 +144,6 @@ app.post('/' + process.env.ROUTE, async (req, res) => {
 		return;
 	}
 
-	if (text.startsWith('/debug') && from.username == 'Anaboth') {
-		await sendMessage(parseInt(chat.id), message);
-		res.status(200).send('Ok');
-		return;
-	}
-
 	if (text.startsWith('s/') && reply_to_message) {
 		const commands = text.split(';');
 		reply.text     = reply.text.replace(/You mean:\n/g, '');
@@ -187,7 +181,8 @@ app.post('/' + process.env.ROUTE, async (req, res) => {
 			case 'roll': {
 				reply_to     = message_id;
 				const matchs = text.match(/(\d+)d(\d+)([+|-]\d+)?/);
-				let rolls    = [];
+				if (!matchs) break;
+				let rolls = [];
 				if (matchs[1] && matchs[2]) {
 					for (let i = 0; i < matchs[1]; ++i)
 						rolls.push(random(1, parseInt(matchs[2]) + 1));
@@ -273,6 +268,20 @@ app.post('/' + process.env.ROUTE, async (req, res) => {
 				await commands.deleteOne({ 'command' : text.split(' ')[0] });
 				answer   = 'Command ' + text.split(' ')[0] + ' removed! ( ._.) F';
 				reply_to = message_id;
+				break;
+			}
+			case 'debug': {
+				if (!adm) {
+					answer   = 'Only for admins ( ò_ó)';
+					reply_to = message_id;
+					break;
+				}
+				if (adm.level < 4) {
+					answer = 'Your admin level don\'t have permission to do that ( O_o)';
+					reply_to = message_id;
+					break;
+				}
+				answer = message;
 				break;
 			}
 			case 'addadmin': {
