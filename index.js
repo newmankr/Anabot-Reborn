@@ -169,7 +169,7 @@ app.post('/' + process.env.ROUTE, async (req, res) => {
 				answer   = answer.replace(rx, splitted[2]);
 			} catch (e) { console.log(e); }
 		});
-		answer   = '**You mean:**\n' + answer;
+		answer   = '*You mean:*\n' + answer;
 		reply_to = reply_to_message.message_id;
 		await sendMessageReply(parseInt(chat.id), answer, parseInt(reply_to));
 		res.status(200).send('Ok');
