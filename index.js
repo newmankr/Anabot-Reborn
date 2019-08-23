@@ -1,4 +1,5 @@
-/* eslint-disable require-atomic-updates */
+ /* eslint-disable require-atomic-updates */
+
 /* eslint-disable no-mixed-spaces-and-tabs */
 const express     = require('express');
 const fetch       = require('node-fetch');
@@ -42,6 +43,16 @@ const owofy = (str) => {
 	str = str.replace(/r/g, 'w');
 
 	return str;
+};
+
+const mockfy = (str) => {
+	let result = '';
+	
+    for (let i in str)
+        if(i%2 == 0) result += str[i].toUpperCase();
+        else result += str[i].toLowerCase();;
+	
+	return result;
 };
 
 // Send message to a given ID
@@ -180,6 +191,7 @@ app.post('/' + process.env.ROUTE, async (req, res) => {
 
 		switch (command) {
 			case 'owofy': answer = owofy(text); break;
+			case 'mockfy': answer = mockfy(text); break;
 			case 'roll': {
 				reply_to     = message_id;
 				const matchs = text.match(/(\d+)d(\d+)([+|-]\d+)?/);
