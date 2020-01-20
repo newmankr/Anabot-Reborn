@@ -155,7 +155,7 @@ app.post('/' + process.env.ROUTE, async (req, res) => {
 		res.status(200).send('Ok');
 		return;
 	}
-
+    // not bug serv
 	if (!text.match('^\/[a-z]')) {
 		res.status(200).send('Ok');
 		 return;
