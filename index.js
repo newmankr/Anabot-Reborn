@@ -3,6 +3,7 @@
 /* eslint-disable no-mixed-spaces-and-tabs */
 const express     = require('express');
 const fetch       = require('node-fetch');
+const cheerio     = require('cheerio');
 const MongoClient = require('mongodb').MongoClient;
 const app         = express();
 const api_url     = 'https://api.telegram.org/bot' + process.env.BOT_TOKEN;
@@ -53,6 +54,21 @@ const mockfy = (str) => {
         else result += str[i].toLowerCase();;
 	
 	return result;
+};
+
+const kym = async (meme) => {
+	meme = meme.replace(' ', '+');
+
+	let res      = await fetch(`https://knowyourmeme.com/search?q=${meme}`);
+	let $        = cheerio.load(await res.text());
+	const router = $('.entry_list a').first().attr('href');
+  
+	res            = await fetch(`https://knowyourmeme.com${router}`);
+	$              = cheerio.load(await res.text());
+	let definition = $('.bodycopy p').first().text();
+  
+	if (definition != 'About') return definition;
+	else return $('.bodycopy p').next().text();
 };
 
 // Send message to a given ID
@@ -197,6 +213,14 @@ app.post('/' + process.env.ROUTE, async (req, res) => {
 		switch (command) {
 			case 'owofy': answer = owofy(text); break;
 			case 'mockfy': answer = mockfy(text); break;
+			case 'kym': {
+				try{
+					answer = await kym(text);
+				} catch(e) {
+					answer = 'No meme found.'
+				}
+				break;
+			}
 			case 'roll': {
 				reply_to     = message_id;
 				const matchs = text.match(/(\d+)d(\d+)([+|-]\d+)?/);
