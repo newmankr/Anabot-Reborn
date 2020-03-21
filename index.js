@@ -155,6 +155,11 @@ app.post('/' + process.env.ROUTE, async (req, res) => {
 		res.status(200).send('Ok');
 		return;
 	}
+    // not bug serv
+	if (!text.match('^\/[a-z]')) {
+		res.status(200).send('Ok');
+		 return;
+	}
 
 	if (text.startsWith('s/') && reply_to_message) {
 		const commands = text.split(';');
@@ -181,7 +186,7 @@ app.post('/' + process.env.ROUTE, async (req, res) => {
 	const quotes   = await   db.collection('quotes');
 	const commands = await db.collection('commands');
 
-	if (text.startsWith('/')) {
+	if (text.match('^\/[a-z]')) {
 		// it's command
 		const command = text.match(/(\/\w+)(@\w+)?/)[1].substring(1);
 		text          = text.replace(/\/\w+(@\w+)?(\s+)?/, '');
