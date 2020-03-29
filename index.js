@@ -71,6 +71,18 @@ const kym = async (meme) => {
 	else return $('.bodycopy p').next().text();
 };
 
+const ud = async (query) => {
+	query = query.replace(' ', '+');
+
+	let res          = await fetch(`https://www.urbandictionary.com/define.php?term=${query}`);
+    let $            = cheerio.load(await res.text());
+    const word       = $('.word').first().text();
+    const definition = $('.meaning').first().text();
+    const example    = $('.example').first().text();
+
+    return {word, definition, example};
+};
+
 // Send message to a given ID
 const sendMessage = async (id, data, parse) => {
 	return await fetch(api_url + '/sendMessage', {
@@ -219,6 +231,15 @@ app.post('/' + process.env.ROUTE, async (req, res) => {
 				} catch(e) {
 					answer = 'No meme found.'
 				}
+				break;
+			}
+			case 'ud': {
+				answer = await ud(text);
+
+				if(answer.word !== '')
+					answer = `${answer.word} definition: ${answer.definition}\n\nExample: ${answer.example}`;
+				else
+					answer = 'No definition found';
 				break;
 			}
 			case 'roll': {
