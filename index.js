@@ -1,4 +1,4 @@
- /* eslint-disable require-atomic-updates */
+/* eslint-disable require-atomic-updates */
 
 /* eslint-disable no-mixed-spaces-and-tabs */
 const express     = require('express');
@@ -48,39 +48,45 @@ const owofy = (str) => {
 
 const mockfy = (str) => {
 	let result = '';
-	
-    for (let i in str)
-        if(i%2 == 0) result += str[i].toUpperCase();
-        else result += str[i].toLowerCase();;
-	
+
+	for (let i in str)
+		if (i % 2 == 0)
+			result += str[i].toUpperCase();
+		else
+			result += str[i].toLowerCase();
+	;
+
 	return result;
 };
 
 const kym = async (meme) => {
 	meme = meme.replace(' ', '+');
 
-	let res      = await fetch(`https://knowyourmeme.com/search?q=${meme}`);
-	let $        = cheerio.load(await res.text());
-	const router = $('.entry_list a').first().attr('href');
-  
+	let res           = await fetch(`https://knowyourmeme.com/search?q=${meme}`);
+	let             $ = cheerio.load(await res.text());
+	const router      = $('.entry_list a').first().attr('href');
+
 	res            = await fetch(`https://knowyourmeme.com${router}`);
 	$              = cheerio.load(await res.text());
 	let definition = $('.bodycopy p').first().text();
-  
-	if (definition != 'About') return definition;
-	else return $('.bodycopy p').next().text();
+
+	if (definition != 'About')
+		return definition;
+	else
+		return $('.bodycopy p').next().text();
 };
 
 const ud = async (query) => {
 	query = query.replace(' ', '+');
 
-	let res          = await fetch(`https://www.urbandictionary.com/define.php?term=${query}`);
-    let $            = cheerio.load(await res.text());
-    const word       = $('.word').first().text();
-    const definition = $('.meaning').first().text();
-    const example    = $('.example').first().text();
+	let     res =
+	  await fetch(`https://www.urbandictionary.com/define.php?term=${query}`);
+	let     $        = cheerio.load(await res.text());
+	const word       = $('.word').first().text();
+	const definition = $('.meaning').first().text();
+	const example    = $('.example').first().text();
 
-    return {word, definition, example};
+	return { word, definition, example };
 };
 
 // Send message to a given ID
@@ -88,8 +94,11 @@ const sendMessage = async (id, data, parse) => {
 	return await fetch(api_url + '/sendMessage', {
 		       method : 'POST',
 		       headers : { 'Content-Type' : 'application/json' },
-		body : JSON.stringify(
-		  { chat_id : id, text : data, parse_mode : (parse) ? 'Markdown' : '' })
+		       body : JSON.stringify({
+			       chat_id : id,
+			       text : data,
+			       parse_mode : (parse) ? 'Markdown' : ''
+		       })
 	       })
 	  .then(res => res.json());
 };
@@ -98,12 +107,12 @@ const sendMessageReply = async (id, data, reply_to, parse) => {
 	return await fetch(api_url + '/sendMessage', {
 		       method : 'POST',
 		       headers : { 'Content-Type' : 'application/json' },
-		body : JSON.stringify({
-			chat_id : id,
-			text : data,
-		reply_to_message_id : reply_to,
-		parse_mode : (parse) ? 'Markdown' : ''
-		})
+		       body : JSON.stringify({
+			       chat_id : id,
+			       text : data,
+			       reply_to_message_id : reply_to,
+			       parse_mode : (parse) ? 'Markdown' : ''
+		       })
 	       })
 	  .then(res => res.json());
 };
@@ -173,6 +182,12 @@ app.post('/' + process.env.ROUTE, async (req, res) => {
 	if (reply) reply.date = reply_to_message.date;
 	let reply_to = (reply_to_message) ? reply_to_message.message_id : message_id;
 
+	if (message.dice && message.dice.value && message.dice.value == 1) {
+		await sendMessageReply(parseInt(chat.id), 'Noob', parseInt(message_id));
+		res.status(200).send('Ok');
+		return;
+	}
+
 	if (!text) {
 		res.status(200).send('Ok');
 		return;
@@ -183,10 +198,11 @@ app.post('/' + process.env.ROUTE, async (req, res) => {
 		res.status(200).send('Ok');
 		return;
 	}
-    // not bug serv
+
+	// not bug serv
 	if (!text.match('^\/[a-z]')) {
 		res.status(200).send('Ok');
-		 return;
+		return;
 	}
 
 	if (text.startsWith('s/') && reply_to_message) {
@@ -226,18 +242,17 @@ app.post('/' + process.env.ROUTE, async (req, res) => {
 			case 'owofy': answer = owofy(text); break;
 			case 'mockfy': answer = mockfy(text); break;
 			case 'kym': {
-				try{
+				try {
 					answer = await kym(text);
-				} catch(e) {
-					answer = 'No meme found.'
-				}
+				} catch (e) { answer = 'No meme found.' }
 				break;
 			}
 			case 'ud': {
 				answer = await ud(text);
 
-				if(answer.word !== '')
-					answer = `${answer.word} definition: ${answer.definition}\n\nExample: ${answer.example}`;
+				if (answer.word !== '')
+					answer = `${answer.word} definition: ${
+						answer.definition}\n\nExample: ${answer.example}`;
 				else
 					answer = 'No definition found';
 				break;
