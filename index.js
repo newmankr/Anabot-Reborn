@@ -89,6 +89,16 @@ const ud = async (query) => {
 	return { word, definition, example };
 };
 
+const unshort = async (url) => {
+        const response = await fetch(`https://unshorten.me/json/${url}`);
+        const json = await response.json();
+
+        if (!json.success) return json.error;
+        if (json.remaining_calls === 0) return "Reached 10 request/hour API limit.";
+
+        return json.resolved_url;
+};
+
 // Send message to a given ID
 const sendMessage = async (id, data, parse) => {
 	return await fetch(api_url + '/sendMessage', {
@@ -241,6 +251,7 @@ app.post('/' + process.env.ROUTE, async (req, res) => {
 		switch (command) {
 			case 'owofy': answer = owofy(text); break;
 			case 'mockfy': answer = mockfy(text); break;
+			case 'unshort': answer = unshort(text); break;
 			case 'kym': {
 				try {
 					answer = await kym(text);
